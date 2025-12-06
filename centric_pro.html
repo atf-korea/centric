@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조세 전문가</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 고정 검색바 스타일 */
+        .sticky-search {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        /* 컨텐츠 영역 여백 */
+        .content-area {
+            padding-top: 1rem;
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 640px) {
+            .mobile-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .mobile-search {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .mobile-profile {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .mobile-profile .profile-image {
+                align-self: center;
+            }
+        }
+        
+        /* 프로필 카드 호버 효과 */
+        .profile-card {
+            transition: all 0.3s ease;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* 텍스트 라인 제한 */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 헤더 -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">조세 전문가</h1>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">세금에 관한 최고의 전문가를 만나보세요</p>
+        </div>
+    </header>
+
+    <!-- 로딩 표시 -->
+    <div id="loadingIndicator" class="text-center py-8">
+        <div class="loading mx-auto mb-4"></div>
+        <p class="text-gray-600">데이터를 불러오는 중...</p>
+    </div>
+
+    <!-- 고정 검색 및 필터 -->
+    <div id="searchSection" class="sticky-search" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row mobile-search gap-3">
+                <div class="flex-1 relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="이름, 전문분야, 부서로 검색..."
+                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    />
+                </div>
+                <div class="w-full sm:w-48">
+                    <select
+                        id="departmentFilter"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    >
+                        <option value="">모든 부서</option>
+                    </select>
+                </div>
+                <button id="clearButton" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap" style="display: none;">
+                    전체 보기
+                </button>
+            </div>
+            
+            <div class="mt-3 text-xs sm:text-sm text-gray-600">
+                <span id="displayInfo">검색 중...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 content-area pb-8">
+        <!-- 전문가 목록 -->
+        <div id="professionalsGrid" class="grid mobile-grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" style="display: none;">
+        </div>
+
+        <!-- 검색 결과가 없을 때 -->
+        <div id="noResults" class="text-center py-12" style="display: none;">
+            <i class="fas fa-user text-4xl sm:text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
+            <p class="text-sm sm:text-base text-gray-600">다른 검색어나 필터를 시도해보세요.</p>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div id="errorMessage" class="text-center py-12" style="display: none;">
+            <i class="fas fa-exclamation-triangle text-4xl sm:text-6xl text-red-300 mb-4"></i>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">데이터를 불러올 수 없습니다</h3>
+            <p class="text-sm sm:text-base text-gray-600">네트워크 연결을 확인하고 다시 시도해주세요.</p>
+            <button onclick="loadProfessionals()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base">
+                다시 시도
+            </button>
+        </div>
+    </div>
+
+    <!-- 프로필 모달 -->
+    <div id="profileModal" class="modal">
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                <h2 class="text-lg sm:text-xl font-semibold">전문가 프로필</h2>
+                <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+            
+            <div id="modalContent" class="p-4 sm:p-6">
+                <!-- 모달 내용이 동적으로 삽입됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Config 파일 로드 -->
+    <script src="config.js"></script>
+    
+    <script>
+        let allProfessionals = [];
+        let filteredProfessionals = [];
+        let isSearchMode = false;
+        
+        // 초기 목록 표시하고자 하는 건수 지정
+        const INITIAL_DISPLAY_COUNT = 10;
+
+        // 페이지 로드 시 데이터 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfessionals();
+        });
+
+        // 구글시트에서 데이터 불러오기
+        async function loadProfessionals() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${SHEET_RANGE}?key=${GOOGLE_API_KEY}`);
+                
+                if (!response.ok) {
+                    throw new Error('네트워크 응답이 올바르지 않습니다');
+                }
+                
+                const data = await response.json();
+                const rows = data.values;
+                
+                if (!rows || rows.length === 0) {
+                    throw new Error('데이터가 없습니다');
+                }
+
+                // 헤더 행을 제외하고 데이터 파싱
+                allProfessionals = rows.slice(1).map((row, index) => ({
+                    id: index + 1,
+                    name: row[0] || '',
+                    title: row[1] || '',
+                    department: row[2] || '',
+                    specialties: row[3] ? row[3].split(',').map(s => s.trim()) : [],
+                    email: row[4] || '',
+                    phone: row[5] || '',
+                    location: row[6] || '',
+                    education: row[7] ? row[7].split(',').map(s => s.trim()) : [],
+                    experience: row[8] || '',
+                    languages: row[9] ? row[9].split(',').map(s => s.trim()) : [],
+                    bio: row[10] || '',
+                    image: row[11] || ''
+                }));
+
+                // 초기에는 처음 10개만 표시
+                filteredProfessionals = allProfessionals.slice(0, INITIAL_DISPLAY_COUNT);
+                isSearchMode = false;
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('searchSection').style.display = 'block';
+                document.getElementById('professionalsGrid').style.display = 'grid';
+                
+                setupFilters();
+                renderProfessionals();
+                
+            } catch (error) {
+                console.error('데이터 로딩 오류:', error);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
+        // 필터 설정
+        function setupFilters() {
+            const departments = [...new Set(allProfessionals.map(p => p.department))].filter(d => d);
+            const departmentSelect = document.getElementById('departmentFilter');
+            
+            // 기존 옵션 제거 (첫 번째 옵션 제외)
+            while (departmentSelect.children.length > 1) {
+                departmentSelect.removeChild(departmentSelect.lastChild);
+            }
+            
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentSelect.appendChild(option);
+            });
+
+            // 검색 버튼 클릭 이벤트
+            document.getElementById('searchInput').addEventListener('input', performSearch);
+            
+            // 엔터 키 이벤트
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // 부서 필터 변경 시 즉시 검색
+            document.getElementById('departmentFilter').addEventListener('change', performSearch);
+
+            // 전체 목록 보기 버튼
+            document.getElementById('clearButton').addEventListener('click', showAllInitial);
+        }
+
+        // 검색 수행
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+			const selectedDepartment = document.getElementById('departmentFilter').value;
+
+			if (searchTerm || selectedDepartment) {
+				isSearchMode = true;
+
+				filteredProfessionals = allProfessionals.filter(prof => {
+					const matchesDepartment = !selectedDepartment || prof.department === selectedDepartment;
+
+					// 검색어(searchTerm)가 있을 경우에만 필터링 로직 실행
+					const matchesSearch = !searchTerm || [
+						prof.name,
+						prof.title,
+						prof.department,
+						prof.specialties.join(' '), // 전문 분야는 배열이므로 문자열로 변환
+						prof.bio,
+						prof.education.join(' '), // 학력도 배열이므로 문자열로 변환
+						prof.experience,
+						prof.location,
+						prof.languages.join(' ') // 언어도 배열이므로 문자열로 변환
+					].some(value => value && String(value).toLowerCase().includes(searchTerm));
+
+					return matchesSearch && matchesDepartment;
+				});
+			} else {
+				showAllInitial();
+				return;
+			}
+			    // 이 부분이 누락되어 있었습니다.
+			renderProfessionals();
+		}
+
+        // 초기 상태로 돌아가기 (처음 10개만 표시)
+        function showAllInitial() {
+            isSearchMode = false;
+            filteredProfessionals = allProfessionals.slice(0, INITIAL_DISPLAY_COUNT);
+            
+            // 검색창과 필터 초기화
+            document.getElementById('searchInput').value = '';
+            document.getElementById('departmentFilter').value = '';
+            
+            renderProfessionals();
+        }
+
+        // 전문가 목록 렌더링
+        function renderProfessionals() {
+            const grid = document.getElementById('professionalsGrid');
+            const noResults = document.getElementById('noResults');
+            const displayInfo = document.getElementById('displayInfo');
+            const clearButton = document.getElementById('clearButton');
+            
+            if (filteredProfessionals.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                displayInfo.textContent = '검색 결과가 없습니다';
+                clearButton.style.display = isSearchMode ? 'inline' : 'none';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            // 표시 정보 업데이트
+            if (isSearchMode) {
+                displayInfo.innerHTML = `검색 결과: <span class="font-semibold text-blue-600">${filteredProfessionals.length}</span>명`;
+                clearButton.style.display = 'inline-block';
+            } else {
+                displayInfo.innerHTML = `전체 <span class="font-semibold text-gray-600">${allProfessionals.length}</span>명 중 <span class="font-semibold text-blue-600">${filteredProfessionals.length}</span>명 표시`;
+                clearButton.style.display = 'none';
+            }
+            
+            grid.innerHTML = filteredProfessionals.map(prof => `
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 overflow-hidden" onclick="showProfile(${prof.id})">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                                ${prof.image ? 
+                                    `<img src="${prof.image}" alt="${prof.name}" class="w-full h-full object-cover">` :
+                                    `<i class="fas fa-user text-2xl text-gray-600"></i>`
+                                }
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-900">${prof.name}</h3>
+                                <p class="text-sm text-gray-600"><b>${prof.title}</b></p>
+                                <p class="text-sm text-blue-600">${prof.department}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex flex-wrap gap-2">
+                                ${prof.specialties.slice(0, 3).map(spec => 
+                                    `<span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs">${spec}</span>`
+                                ).join('')}
+                                ${prof.specialties.length > 3 ? `<span class="text-xs text-gray-500">+${prof.specialties.length - 3}개</span>` : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 line-clamp-2">${prof.bio}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 프로필 모달 표시
+        function showProfile(professionalId) {
+            
+            const professional = allProfessionals.find(p => p.id === professionalId);
+            if (!professional) return;
+            
+            const modalContent = document.getElementById('modalContent');
+            
+            const formattedExperience = professional.experience ? professional.experience.replace(/\n/g, '<br>') : '';
+			const formattedBio = professional.bio ? professional.bio.replace(/\n/g, '<br>') : '';
+
+            modalContent.innerHTML = `
+                <div class="flex items-start space-x-6 mb-6">
+                    <div class="w-32 h-40 bg-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
+                        ${professional.image ? 
+                            `<img src="${professional.image}" alt="${professional.name}" class="w-full h-full object-cover">` :
+                            `<i class="fas fa-user text-6xl text-gray-600"></i>`
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">${professional.name}</h3>
+                        <p class="text-lg text-gray-600 mb-2">${professional.title}</p>
+                        <p class="text-lg text-blue-600 mb-4">${professional.department}</p>
+                        
+                        <div class="space-y-2 text-sm text-gray-600">
+                            ${professional.email ? `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-envelope w-4"></i>
+                                    <span>${professional.email}</span>
+                                </div>
+                            ` : ''}
+                            ${professional.phone ? `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-phone w-4"></i>
+                                    <span>${professional.phone}</span>
+                                </div>
+                            ` : ''}
+                            ${professional.location ? `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-map-marker-alt w-4"></i>
+                                    <span>${professional.location}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-award mr-2"></i>
+                            전문분야
+                        </h4>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            ${professional.specialties.map(spec => 
+                                `<span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">${spec}</span>`
+                            ).join('')}
+                        </div>
+                        
+                        ${professional.education.length > 0 ? `
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-graduation-cap mr-2"></i>
+                                학력
+                            </h4>
+                            <ul class="space-y-1 text-sm text-gray-600 mb-6">
+                                ${professional.education.map(edu => `<li>• ${edu}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                    
+                    <div>
+                        
+                        ${professional.experience ? `
+                            <h4 class="font-semibold text-gray-900 mb-3">경력</h4>
+                            <p class="text-sm text-gray-600 mb-6">${formattedExperience}</p>
+                        ` : ''}
+                        
+                        ${professional.languages.length > 0 ? `
+                            <h4 class="font-semibold text-gray-900 mb-3">언어</h4>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                ${professional.languages.map(lang => 
+                                    `<span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm">${lang}</span>`
+                                ).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                ${professional.bio ? `
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">소개</h4>
+                        <p class="text-gray-600 leading-relaxed">${formattedBio}</p>
+                    </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('profileModal').classList.add('show');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        // 모달 배경 클릭 시 닫기
+        document.getElementById('profileModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
