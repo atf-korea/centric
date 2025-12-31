@@ -383,10 +383,10 @@
                         
                         <div class="space-y-2">
                             <div class="flex flex-wrap gap-2">
-                                ${prof.specialties.slice(0, 3).map(spec => 
+                                ${prof.specialties.slice(0, 4).map(spec => 
                                     `<span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs">${spec}</span>`
                                 ).join('')}
-                                ${prof.specialties.length > 3 ? `<span class="text-xs text-gray-500">+${prof.specialties.length - 3}개</span>` : ''}
+                                ${prof.specialties.length > 4 ? `<span class="text-xs text-gray-500">+${prof.specialties.length - 4}개</span>` : ''}
                             </div>
                             <p class="text-sm text-gray-600 line-clamp-2">${prof.bio}</p>
                         </div>
@@ -516,5 +516,6 @@
 </body>
 
 </html>
+
 
 
