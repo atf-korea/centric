@@ -1,7 +1,7 @@
 // Google Sheets API 설정
 const GOOGLE_API_KEY = 'AIzaSyBS1kIHPn1j2iCL4npiitSo_6Sm0M42450'; // 구글 API 키를 입력하세요
 const GOOGLE_SHEET_ID = '1InckP0gk2TpAK5s7R9dFusctl2f_jFGJoBTqsZiQKko'; // 구글시트 ID를 입력하세요
-const SHEET_RANGE = 'prolist!A:L'; // 데이터 범위 (A열부터 L열까지)
+const SHEET_RANGE = 'prolist!A:M'; // 데이터 범위 (A열부터 M열까지)
 
 // 구글시트 컬럼 구조 (참고용)
 // A: 이름
@@ -11,11 +11,12 @@ const SHEET_RANGE = 'prolist!A:L'; // 데이터 범위 (A열부터 L열까지)
 // E: 이메일
 // F: 전화번호
 // G: 위치
-// H: 학력 (쉼표로 구분)
-// I: 경력
-// J: 언어 (쉼표로 구분)
-// K: 소개
-// L: 이미지 URL
+// H: 출산(지역 / 생년)
+// I: 학력 (쉼표로 구분)
+// J: 경력
+// K: 언어 (쉼표로 구분)
+// L: 소개
+// M: 이미지 URL
 
 /*
 구글시트 설정 방법:
