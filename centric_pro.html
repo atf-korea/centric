@@ -124,7 +124,7 @@
                     <input
                         type="text"
                         id="searchInput"
-                        placeholder="이름, 전문분야, 소속, 출신, 경력으로 검색..."
+                        placeholder="이름, 전문분야, 부서로 검색..."
                         class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     />
                 </div>
@@ -133,7 +133,7 @@
                         id="departmentFilter"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
-                        <option value="">모든 소속</option>
+                        <option value="">모든 부서</option>
                     </select>
                 </div>
                 <button id="clearButton" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap" style="display: none;">
@@ -391,7 +391,14 @@
                                 ).join('')}
                                 ${prof.specialties.length > 4 ? `<span class="text-xs text-gray-500">+${prof.specialties.length - 4}개</span>` : ''}
                             </div>
-                            <p class="text-sm text-gray-600 line-clamp-2">${prof.bio}</p>
+                            <div class="flex justify-between items-start text-sm text-gray-600 mt-2 pt-2 border-t border-gray-100">
+                                <div class="w-1/2 pr-2 text-left" title="${prof.birth}">
+                                    <p class="line-clamp-2">${prof.birth || '-'}</p>
+                                </div>
+                                <div class="w-1/2 pl-2 border-l border-gray-200 text-right" title="${prof.education.join(', ')}">
+                                    <p class="line-clamp-2">${prof.education.join('<br>') || '-'}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
