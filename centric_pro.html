@@ -232,11 +232,12 @@
                     email: row[4] || '',
                     phone: row[5] || '',
                     location: row[6] || '',
-                    education: row[7] ? row[7].split(',').map(s => s.trim()) : [],
-                    experience: row[8] || '',
-                    languages: row[9] ? row[9].split(',').map(s => s.trim()) : [],
-                    bio: row[10] || '',
-                    image: row[11] || ''
+                    birth: row[7] || '',
+                    education: row[8] ? row[8].split(',').map(s => s.trim()) : [],
+                    experience: row[9] || '',
+                    languages: row[10] ? row[10].split(',').map(s => s.trim()) : [],
+                    bio: row[11] || '',
+                    image: row[12] || ''
                 }));
 
                 // 초기에는 처음 500개만 표시
@@ -308,10 +309,12 @@
 						prof.title,
 						prof.department,
 						prof.specialties.join(' '), // 전문 분야는 배열이므로 문자열로 변환
+						prof.birth,
 						prof.bio,
 						prof.education.join(' '), // 학력도 배열이므로 문자열로 변환
 						prof.experience,
 						prof.location,
+						prof.birth,
 						prof.languages.join(' ') // 언어도 배열이므로 문자열로 변환
 					].some(value => value && String(value).toLowerCase().includes(searchTerm));
 
@@ -369,10 +372,10 @@
                     <div class="p-6">
                         <div class="flex items-center space-x-4 mb-4">
                             <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
-                                ${prof.image ? 
-                                    `<img src="${prof.image}" alt="${prof.name}" class="w-full h-full object-cover">` :
-                                    `<i class="fas fa-user text-2xl text-gray-600"></i>`
-                                }
+				${prof.image ? 
+				    `<img src="${encodeURI(prof.image)}" alt="${prof.name}" class="w-full h-full object-cover" 							onerror="this.onerror=null; this.src='https://via.placeholder.com/150';">` :
+				    `<i class="fas fa-user text-2xl text-gray-600"></i>`
+				}
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-gray-900">${prof.name}</h3>
@@ -453,6 +456,15 @@
                                 `<span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">${spec}</span>`
                             ).join('')}
                         </div>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-award mr-2"></i>
+                            출신 및 생년
+                        </h4>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                                  <span> ${professional.birth}</span>
+                        </div>
                         
                         ${professional.education.length > 0 ? `
                             <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
@@ -516,6 +528,5 @@
 </body>
 
 </html>
-
 
 
