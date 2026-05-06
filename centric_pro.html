@@ -124,7 +124,7 @@
                     <input
                         type="text"
                         id="searchInput"
-                        placeholder="이름, 전문분야, 부서로 검색..."
+                        placeholder="이름, 전문분야, 소속, 출신 등으로 검색..."
                         class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     />
                 </div>
@@ -133,7 +133,7 @@
                         id="departmentFilter"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
-                        <option value="">모든 부서</option>
+                        <option value="">모든 소속</option>
                     </select>
                 </div>
                 <button id="clearButton" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap" style="display: none;">
@@ -285,7 +285,7 @@
                 }
             });
 
-            // 부서 필터 변경 시 즉시 검색
+            // 소속 필터 변경 시 즉시 검색
             document.getElementById('departmentFilter').addEventListener('change', performSearch);
 
             // 전체 목록 보기 버튼
