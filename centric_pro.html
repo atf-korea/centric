@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -133,7 +134,7 @@
                         id="departmentFilter"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
-                        <option value="">담당 지역</option>
+                        <option value="">지역 검색</option>
                     </select>
                 </div>
                 <button id="clearButton" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap" style="display: none;">
@@ -238,7 +239,7 @@
                     languages: row[10] ? row[10].split(',').map(s => s.trim()) : [],
                     bio: row[11] || '',
                     province: row[12] || '',
-                    image: row[13] || ''					
+                    image: row[13] || ''
                 }));
 
                 // 초기에는 처음 500개만 표시
@@ -261,7 +262,7 @@
 
         // 필터 설정
         function setupFilters() {
-            const departments = [...new Set(allProfessionals.map(p => p.department))].filter(d => d);
+            const departments = [...new Set(allProfessionals.map(p => p.province))].filter(d => d);
             const departmentSelect = document.getElementById('departmentFilter');
             
             // 기존 옵션 제거 (첫 번째 옵션 제외)
@@ -302,7 +303,7 @@
 				isSearchMode = true;
 
 				filteredProfessionals = allProfessionals.filter(prof => {
-					const matchesDepartment = !selectedDepartment || prof.department === selectedDepartment;
+					const matchesDepartment = !selectedDepartment || prof.province === selectedDepartment;
 
 					// 검색어(searchTerm)가 있을 경우에만 필터링 로직 실행
 					const matchesSearch = !searchTerm || [
@@ -381,7 +382,7 @@
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-gray-900">${prof.name}</h3>
                                 <p class="text-sm text-gray-600"><b>${prof.title}</b></p>
-                                <p class="text-sm text-blue-600">${prof.department}</p>
+                                <p class="text-sm text-blue-600">${prof.province}</p>
                             </div>
                         </div>
                         
