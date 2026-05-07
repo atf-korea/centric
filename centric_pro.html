@@ -133,7 +133,7 @@
                         id="departmentFilter"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
-                        <option value="">모든 소속</option>
+                        <option value="">담당 지역</option>
                     </select>
                 </div>
                 <button id="clearButton" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base whitespace-nowrap" style="display: none;">
@@ -237,7 +237,8 @@
                     experience: row[9] || '',
                     languages: row[10] ? row[10].split(',').map(s => s.trim()) : [],
                     bio: row[11] || '',
-                    image: row[12] || ''
+                    province: row[12] || '',
+                    image: row[13] || ''					
                 }));
 
                 // 초기에는 처음 500개만 표시
